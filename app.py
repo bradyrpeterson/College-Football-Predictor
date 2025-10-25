@@ -29,7 +29,7 @@ else:
             json.dump(fbs_teams, f)
         print(f"Cached {len(fbs_teams)} FBS teams to {CACHE_FILE}")
     else:
-        print("⚠️ Warning: API request failed, using fallback team list.")
+        print("Warning: API request failed, using fallback team list.")
         fbs_teams = sorted(ratings.index)
 
 @app.route("/", methods=["GET", "POST"])
@@ -42,7 +42,10 @@ def home():
         try:
             margin, prob = predict_game(home_team, away_team)
             winner = home_team if margin > 0 else away_team
-            result = f"{winner} is predicted to win by {abs(margin):.2f} points ({prob*100:.1f}% chance)."
+            if(margin>0):
+                winner_prob=prob
+            else: winner_prob=1-prob
+            result = f"{winner} has a {winner_prob:.2f}% chance to win and is predicted to win by {abs(margin):.2f}"
         except KeyError:
             result = "One of those teams isn't available in the dataset."
 
