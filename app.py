@@ -6,8 +6,7 @@ import json
 
 app = Flask(__name__)
 
-# --- Get FBS team list from CollegeFootballData API ---
-# --- Get FBS team list, using cache if available ---
+#Get the FBS Teams from the json file
 with open("fbs_teams_2025.json","r") as f:
     fbs_teams=json.load(f)
 
