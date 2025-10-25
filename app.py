@@ -1,21 +1,36 @@
 from flask import Flask, render_template, request
 from predictor import predict_game, ratings  # imports your model + function
 import requests
+import os
+import json
 
 app = Flask(__name__)
 
 # --- Get FBS team list from CollegeFootballData API ---
-headers = {
-    "Authorization": "Bearer API_KEY"
-}
-teams_url = "https://api.collegefootballdata.com/teams/fbs?year=2025"
-response = requests.get(teams_url, headers=headers)
+# --- Get FBS team list, using cache if available ---
+CACHE_FILE = "fbs_teams_2025.json"
 
-if response.ok:
-    fbs_teams = sorted([team["school"] for team in response.json()])
+if os.path.exists(CACHE_FILE):
+    # Load from local cache
+    with open(CACHE_FILE, "r") as f:
+        fbs_teams = json.load(f)
 else:
-    # fallback to whatever your model has if the API fails
-    fbs_teams = sorted(ratings.index)
+    #If the list isn't cached call the API
+    headers = {
+        "Authorization": "Bearer API_KEY"
+    }
+    teams_url = "https://api.collegefootballdata.com/teams/fbs?year=2025"
+    response = requests.get(teams_url, headers=headers)
+
+    if response.ok:
+        fbs_teams = sorted([team["school"] for team in response.json()])
+        # Save list to cache for next time
+        with open(CACHE_FILE, "w") as f:
+            json.dump(fbs_teams, f)
+        print(f"Cached {len(fbs_teams)} FBS teams to {CACHE_FILE}")
+    else:
+        print("⚠️ Warning: API request failed, using fallback team list.")
+        fbs_teams = sorted(ratings.index)
 
 @app.route("/", methods=["GET", "POST"])
 def home():
