@@ -1,0 +1,70 @@
+/*General Page Styling*/
+body {
+  font-family: 'Poppins', sans-serif;
+  background: linear-gradient(to bottom right, #00416A, #E4E5E6);
+  color: #3099c6;
+  text-align: center;
+  margin: 0;
+  padding: 0;
+}
+
+.container {
+  margin-top: 60px;
+  background: #ffffffdd;
+  display: inline-block;
+  padding: 40px 60px;
+  border-radius: 15px;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+}
+
+h1 {
+  color: #003366;
+  margin-bottom: 10px;
+}
+
+p {
+  color: #444;
+  margin-bottom: 25px;
+}
+
+.form-group {
+  margin: 15px 0;
+}
+
+label {
+  display: block;
+  font-weight: bold;
+  margin-bottom: 5px;
+}
+
+select {
+  font-size: 16px;
+  padding: 8px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+  width: 220px;
+}
+
+button {
+  margin-top: 20px;
+  background-color: #007bff;
+  border: none;
+  color: white;
+  padding: 10px 20px;
+  font-size: 16px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: 0.2s ease-in-out;
+}
+
+button:hover {
+  background-color: #0056b3;
+}
+
+.result-box {
+  margin-top: 30px;
+  background-color: #f8f9fa;
+  padding: 20px;
+  border-radius: 10px;
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
+}

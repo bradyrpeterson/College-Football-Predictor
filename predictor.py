@@ -96,12 +96,7 @@ def predict_game(home, away):
     prob = 1 / (1 + np.exp(-margin / 7))  # rough logistic
     return margin, prob
 
-# example
-m, p = predict_game("Florida State", "Ohio State")
-print(f"\nPredicted margin {m:.2f}, win probability {p*100:.1f}%")
+# How to print if I wasn't using the app
+#m, p = predict_game("Florida State", "Ohio State")
+#print(f"\nPredicted margin {m:.2f}, win probability {p*100:.1f}%")
 
-# Step 8: visualize
-#ratings.sort_values(ascending=True).tail(25).plot(kind="barh", figsize=(6,8))
-#plt.title("Top 25 Team Ratings (CFB 2025)")
-#plt.xlabel("Power Rating (points above average)")
-#plt.show()

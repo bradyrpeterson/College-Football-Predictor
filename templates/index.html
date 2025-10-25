@@ -1,33 +1,44 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>College Football Predictor</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>College Football Predictor</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
-<body style="font-family: Arial; text-align: center; margin-top: 50px;">
+
+<body>
+  <div class="container">
     <h1>🏈 College Football Predictor</h1>
+    <p>Select two FBS teams to predict the winner based on previous results and analytics.</p>
+
     <form method="POST">
-        <label>Home Team:</label>
-        <select name="home_team">
-            {% for team in teams %}
-                <option value="{{ team }}">{{ team }}</option>
-            {% endfor %}
+      <div class="form-group">
+        <label for="home_team">Home Team:</label>
+        <select name="home_team" id="home_team" required>
+          {% for team in teams %}
+          <option value="{{ team }}">{{ team }}</option>
+          {% endfor %}
         </select>
+      </div>
 
-        <label>Away Team:</label>
-        <select name="away_team">
-            {% for team in teams %}
-                <option value="{{ team }}">{{ team }}</option>
-            {% endfor %}
+      <div class="form-group">
+        <label for="away_team">Away Team:</label>
+        <select name="away_team" id="away_team" required>
+          {% for team in teams %}
+          <option value="{{ team }}">{{ team }}</option>
+          {% endfor %}
         </select>
+      </div>
 
-        <br><br>
-        <button type="submit">Predict Game</button>
+      <button type="submit">Predict Game</button>
     </form>
 
     {% if result %}
-        <h2 style="margin-top: 40px;">{{ result }}</h2>
+    <div class="result-box">
+      <h2>{{ result }}</h2>
+    </div>
     {% endif %}
+  </div>
 </body>
 </html>
