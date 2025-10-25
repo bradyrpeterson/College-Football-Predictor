@@ -1,45 +1,54 @@
-🏈 College Football Predictor
-📖 Overview
+# 🏈 College Football Predictor (2025 Season)
 
-The College Football Predictor is a Python-based web application that uses real game data and team statistics to predict the outcome of college football games.
-It uses linear regression to calculate team power ratings and provides a simple Flask web interface where users can select two FBS teams to see a predicted score margin and win probability.
+This project predicts outcomes of **2025 college football games** using team performance data from the [CollegeFootballData API](https://collegefootballdata.com/).  
+It applies a **linear regression model** to calculate team power ratings and combines them with basic efficiency metrics to estimate who will win and by how much.
 
-⚙️ Features
+---
 
-✅ Uses real 2025 data from the CollegeFootballData API
+## ⚙️ Features
 
-✅ Calculates team power ratings from game margins
-✅ Includes games vs FCS schools for more data, but limits the app dropdown to FBS teams only
-✅ Displays predicted winner, expected margin, and win probability
-✅ Simple Flask web interface that runs directly in a Codespace or local environment
+✅ Predicts the **winner**, **margin**, and **win probability** for any matchup  
+✅ Pulls live data for the **2025 FBS season**  
+✅ Uses **team-level stats** (yards per play, turnovers, 3rd-down %, etc.)  
+✅ Simple **Flask web app** with dropdown menus for game selection  
+✅ Cached **FBS team list** for faster performance and fewer API calls  
 
-🧠 How It Works
+---
 
-cfb_predictor.py (or predictor.py)
+## 📁 Project Structure
 
-Fetches 2025 game results from the CFBD API
+College-Football-Predictor/
+│
+├── app.py # Flask web app (frontend + routing)
+├── predictor.py # Core model: builds ratings + prediction logic
+├── fbs_teams_2025.json # Cached list of all 2025 FBS teams
+│
+├── templates/
+│ └── index.html # HTML frontend with dropdown UI
+│
+├── static/
+│ └── css/
+│ └── style.css # Styling for the web interface
+│
+├── requirements.txt # Dependencies (Flask, pandas, scikit-learn, etc.)
+├── Procfile # Deployment configuration (optional)
+├── runtime.txt # Python version (optional)
+└── README.md # Project overview (this file)
 
-Builds a design matrix where each team has +1 (home), −1 (away), or 0 (not in the game)
+---
 
-Runs linear regression to find each team’s rating and home-field advantage
+## 🧠 How It Works
 
-Produces a function:
+The model assigns each team a **power rating** based on their game results.  
+Each game contributes to a system of equations estimating expected point margins between teams.  
+A small “home field” bonus is included to account for advantage when playing at home.
 
-predict_game(home_team, away_team)
+When two teams are selected:
+- Their ratings are subtracted to calculate an **expected margin of victory**.  
+- That margin is then converted to a **win probability** using a logistic function:  
 
+\[
+P(\text{win}) = \frac{1}{1 + e^{-\text{margin}/7}}
+\]
 
-that returns the predicted margin and win probability.
-
-app.py
-
-Starts a Flask server with two dropdowns (Home/Away)
-
-Fetches the official list of 2025 FBS teams from the CFBD API
-
-Calls predict_game() when the user submits the form
-
-Displays the winner, expected margin, and win probability on the page
-
-templates/index.html
-
-Provides a clean, minimal interface with dropdowns for team selection and a “Predict Game” button
+The app takes the user’s input (home and away teams), runs this calculation, and displays the predicted winner, margin, and win probability directly in the browser.
