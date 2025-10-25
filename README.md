@@ -15,28 +15,6 @@ It applies a **linear regression model** to calculate team power ratings and com
 
 ---
 
-## 📁 Project Structure
-
-College-Football-Predictor/
-│
-├── app.py # Flask web app (frontend + routing)
-├── predictor.py # Core model: builds ratings + prediction logic
-├── fbs_teams_2025.json # Cached list of all 2025 FBS teams
-│
-├── templates/
-│ └── index.html # HTML frontend with dropdown UI
-│
-├── static/
-│ └── css/
-│ └── style.css # Styling for the web interface
-│
-├── requirements.txt # Dependencies (Flask, pandas, scikit-learn, etc.)
-├── Procfile # Deployment configuration (optional)
-├── runtime.txt # Python version (optional)
-└── README.md # Project overview (this file)
-
----
-
 ## 🧠 How It Works
 
 The model assigns each team a **power rating** based on their game results.  
