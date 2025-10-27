@@ -14,6 +14,10 @@ with open("fbs_teams_2025.json","r") as f:
 with open("team_logos.json", "r") as f:
     team_logos = json.load(f)
 
+#Get the colors from the color json file
+with open("team_color.json","r") as f:
+    team_colors = json.load(f)
+
 @app.route("/", methods=["GET", "POST"])
 def home():
     #New with logos - Instantiate all the variables first
@@ -22,6 +26,7 @@ def home():
     away_team = None
     home_logo = None
     away_logo = None
+    winner_color = None
     if request.method == "POST":
         home_team = request.form["home_team"]
         away_team = request.form["away_team"]
@@ -34,10 +39,13 @@ def home():
         else: winner_prob=1-prob
         result = f"{winner} has a {winner_prob*100:.2f}% chance to win and is predicted to win by {abs(margin):.2f}"
         
+        #Set the home and away logos to each specific one
+        #Set the winner color euqal to the winners primary color
+        winner_color = team_colors.get(winner)
         home_logo = team_logos.get(home_team)
         away_logo = team_logos.get(away_team)
 
-    return render_template("index.html", teams=fbs_teams, result=result,home_team=home_team,away_team=away_team,home_logo=home_logo,away_logo=away_logo)
+    return render_template("index.html", teams=fbs_teams, result=result,home_team=home_team,away_team=away_team,home_logo=home_logo,away_logo=away_logo,winner_color=winner_color)
 
 if __name__ == "__main__":
     app.run(debug=True, host="0.0.0.0")

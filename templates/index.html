@@ -7,7 +7,7 @@
   <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 
-<body>
+<body {% if winner_color %}style="background-color: {{ winner_color }};"{% endif %}>
   <div class="container">
     <h1>🏈 College Football Predictor</h1>
     <p>Select two FBS teams to predict the winner based on previous results and analytics.</p>

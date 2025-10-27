@@ -1,8 +1,9 @@
 /*General Page Styling*/
 body {
   font-family: 'Poppins', sans-serif;
-  background: linear-gradient(to bottom right, #00416A, #E4E5E6);
-  color: #3099c6;
+  background-color: #000000;
+  color: #000000;
+  transition: background-color 0.8s ease;
   text-align: center;
   margin: 0;
   padding: 0;
@@ -18,7 +19,7 @@ body {
 }
 
 h1 {
-  color: #003366;
+  color: #000000;
   margin-bottom: 10px;
 }
 
