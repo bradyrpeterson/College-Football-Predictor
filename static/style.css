@@ -61,6 +61,36 @@ button:hover {
   background-color: #0056b3;
 }
 
+.result-section{
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 40 px;
+  margin-top:30 px;
+}
+
+.team-card{
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 160 px;
+}
+
+.team-logo{
+  width:100 px;
+  height: 100 px;
+  object-fit: contain;
+  margin-bottom: 10 px;
+  border-radius: 10 px;
+  box-shadow: 0 2 px 6 px rgba(0,0,0,0.2);
+}
+
+.vs-text h2{
+  font-size: 1.8em;
+  color:#003366;
+  margin:0 20 px;
+}
+
 .result-box {
   margin-top: 30px;
   background-color: #f8f9fa;

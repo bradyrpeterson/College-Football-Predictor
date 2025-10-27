@@ -35,6 +35,27 @@
     </form>
 
     {% if result %}
+    <div class = "result-section">
+
+      <div class = "team-card">
+        {% if home_logo %}
+        <img src = "{{home_logo}}" alt="{{home_team}} logo" class="team-logo">
+        {% endif %}
+        <h3>{{home_team}}</h3>
+      </div>
+
+    <div class = "vs-text">
+      <h2>vs</h2>
+    </div>
+
+    <div class = "team-card">
+      {% if away_logo %}
+      <img src = "{{away_logo}}" alt = "{{away_team}} logo" class="team-logo">
+      {% endif %}
+      <h3>{{away_team}}</h3>
+    </div>
+  </div>
+  
     <div class="result-box">
       <h2>{{ result }}</h2>
     </div>
