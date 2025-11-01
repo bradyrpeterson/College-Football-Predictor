@@ -107,6 +107,30 @@ def predict_game(home, away):
     prob = 1 / (1 + np.exp(-margin / 7))  # rough logistic
     return margin, prob
 
+def get_upcoming_predictions(week=None):
+    # Filter games that haven't been played yet
+    upcoming = df[df["homePoints"].isna() & df["awayPoints"].isna()].copy()
+
+    # Optional week filter
+    if week is not None:
+        upcoming = upcoming[upcoming["week"] == week]
+
+    predictions = []
+    for _, game in upcoming.iterrows():
+        home, away = game["homeTeam"], game["awayTeam"]
+        if home in ratings.index and away in ratings.index:
+            margin, prob = predict_game(home, away)
+            winner = home if margin > 0 else away
+            predictions.append({
+                "home": home,
+                "away": away,
+                "predicted_winner": winner,
+                "margin": round(abs(margin), 2),
+                "prob": round(prob * 100, 1) if margin > 0 else round((1 - prob) * 100, 1)
+            })
+
+    return pd.DataFrame(predictions)
+
 # How to print if I wasn't using the app
 #m, p = predict_game("Florida State", "Ohio State")
 #print(f"\nPredicted margin {m:.2f}, win probability {p*100:.1f}%")

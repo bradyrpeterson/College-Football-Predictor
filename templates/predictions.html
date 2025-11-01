@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Upcoming Week Predictions</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+
+<body>
+  <div class="container">
+    <h1>🏈 Upcoming Week Predictions</h1>
+    <p>Select a week to view predicted winners, margins, and win probabilities.</p>
+
+    <!-- Week Selection Form -->
+    <form method="POST" class="week-form">
+      <label for="week">Select Week:</label>
+      <select name="week" id="week" required>
+        {% for w in weeks %}
+        <option value="{{ w }}" {% if selected_week == w %}selected{% endif %}>Week {{ w }}</option>
+        {% endfor %}
+      </select>
+      <button type="submit">Show Predictions</button>
+    </form>
+
+    <!-- Table of Game Predictions -->
+    {% if games %}
+    <table>
+      <thead>
+        <tr>
+          <th>Home</th>
+          <th>Away</th>
+          <th>Predicted Winner</th>
+          <th>Margin</th>
+          <th>Win Probability</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for g in games %}
+        <tr>
+          <td>{{ g.home }}</td>
+          <td>{{ g.away }}</td>
+          <td>{{ g.predicted_winner }}</td>
+          <td>{{ g.margin }}</td>
+          <td>{{ g.prob }}%</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% else %}
+    <p class="no-games">No games found for this week.</p>
+    {% endif %}
+
+    <a href="/" class="back-link">⬅ Back to Predictor</a>
+  </div>
+</body>
+</html>
