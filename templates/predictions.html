@@ -17,7 +17,9 @@
       <label for="week">Select Week:</label>
       <select name="week" id="week" required>
         {% for w in weeks %}
-        <option value="{{ w }}" {% if selected_week == w %}selected{% endif %}>Week {{ w }}</option>
+        <option value="{{ w }}" {% if w == selected_week %}selected{% endif %}>
+          Week {{ w }}
+        </option>
         {% endfor %}
       </select>
       <button type="submit">Show Predictions</button>

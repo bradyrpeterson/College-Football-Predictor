@@ -3,6 +3,7 @@ import pandas as pd
 import numpy as np
 import cfbd
 import requests
+import json
 from sklearn.linear_model import LinearRegression
 import matplotlib.pyplot as plt
 
@@ -37,13 +38,27 @@ stats_clean = stats_wide[useful]
 df = pd.DataFrame([g.to_dict() for g in games])
 #In case I need to see what columns the game dataset has to offer
 #print("Columns available:", df.columns.tolist())
-need_cols = ["season","week","homeTeam","awayTeam","homePoints","awayPoints"]
-df = df[need_cols].dropna(subset=["homePoints","awayPoints"]).reset_index(drop=True)
-if df.empty:
-    raise RuntimeError("No completed games found (after dropping NaNs). Try a different year/week or rerun later.")
+need_cols = ["season","week","homeTeam","awayTeam","homePoints","awayPoints","homeConference","awayConference"]
+df=df[need_cols].copy()
+#Only care about games where one of the teams was FBS
+# Load list of FBS teams
+with open("fbs_teams_2025.json", "r") as f:
+    fbs_teams = json.load(f)
+
+#Only keep games if it involved an FBS team
+df = df[df["homeTeam"].isin(fbs_teams) | df["awayTeam"].isin(fbs_teams)]
+
+df=df.reset_index(drop=True)
+#Need to make an upcoming data frame as well as a completed data frame
+completed = df.dropna(subset=["homePoints","awayPoints"]).reset_index(drop=True)
+upcoming=df[df["homePoints"].isna() | df["awayPoints"].isna()].reset_index(drop=True)
+print(f"Upcoming games found: {len(upcoming)}")
+print(upcoming[["week","homeTeam","awayTeam"]].head(10))
+next_week = int(upcoming["week"].dropna().sort_values().unique()[0])
 
 #define what margin is
 #sort the dataframe to have a line of home and away teams
+df=completed
 df["margin"] = df["homePoints"] - df["awayPoints"]
 teams = sorted(set(df["homeTeam"]).union(df["awayTeam"]))
 
@@ -108,17 +123,24 @@ def predict_game(home, away):
     return margin, prob
 
 def get_upcoming_predictions(week=None):
-    # Filter games that haven't been played yet
-    upcoming = df[df["homePoints"].isna() & df["awayPoints"].isna()].copy()
+    # Use the upcoming games dataset (no scores yet)
+    games_to_predict = upcoming.copy()
 
-    # Optional week filter
     if week is not None:
-        upcoming = upcoming[upcoming["week"] == week]
+        games_to_predict = games_to_predict[games_to_predict["week"].astype(int) == int(week)]
 
     predictions = []
-    for _, game in upcoming.iterrows():
+    for _, game in games_to_predict.iterrows():
         home, away = game["homeTeam"], game["awayTeam"]
-        if home in ratings.index and away in ratings.index:
+
+        #skip games where data or stats are missing
+        if home not in ratings.index or away not in ratings.index:
+            continue
+        if home not in stats_clean["team"].values or away not in stats_clean["team"].values:
+            continue
+
+       
+        try:
             margin, prob = predict_game(home, away)
             winner = home if margin > 0 else away
             predictions.append({
@@ -128,8 +150,13 @@ def get_upcoming_predictions(week=None):
                 "margin": round(abs(margin), 2),
                 "prob": round(prob * 100, 1) if margin > 0 else round((1 - prob) * 100, 1)
             })
+        except Exception as e:
+            print(f"Error predicting {home} vs {away}: {e}")
+            continue
 
     return pd.DataFrame(predictions)
+
+
 
 # How to print if I wasn't using the app
 #m, p = predict_game("Florida State", "Ohio State")

@@ -1,5 +1,5 @@
 from flask import Flask, render_template, request
-from predictor import get_upcoming_predictions, df
+from predictor import get_upcoming_predictions, df, next_week
 from predictor import predict_game, ratings  # imports your model + function
 import requests
 import os
@@ -29,6 +29,9 @@ def home():
     home_logo = None
     away_logo = None
     winner_color = None
+    upcoming_predictions=None
+    
+    upcoming_predictions=get_upcoming_predictions(week=next_week)
     if request.method == "POST":
         home_team = request.form["home_team"]
         away_team = request.form["away_team"]
@@ -47,9 +50,9 @@ def home():
         home_logo = team_logos.get(home_team)
         away_logo = team_logos.get(away_team)
 
-    return render_template("index.html", teams=fbs_teams, result=result,home_team=home_team,away_team=away_team,home_logo=home_logo,away_logo=away_logo,winner_color=winner_color)
+    return render_template("index.html", teams=fbs_teams, result=result,home_team=home_team,away_team=away_team,home_logo=home_logo,away_logo=away_logo,winner_color=winner_color,predictions=upcoming_predictions,week=next_week)
 
-@app.route("/week", methods=["GET", "POST"])
+"""@app.route("/week", methods=["GET", "POST"])
 def week_predictions():
     selected_week = None
     preds = pd.DataFrame()
@@ -62,7 +65,7 @@ def week_predictions():
 
     games = preds.to_dict(orient="records")
     weeks = sorted(df["week"].dropna().unique().astype(int))  # get available weeks
-    return render_template("predictions.html", games=games, weeks=weeks, selected_week=selected_week)
+    return render_template("predictions.html", games=games, weeks=weeks, selected_week=selected_week)"""
 
 if __name__ == "__main__":
     app.run(debug=True, host="0.0.0.0")

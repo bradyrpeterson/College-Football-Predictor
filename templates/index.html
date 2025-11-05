@@ -36,7 +36,6 @@
 
     {% if result %}
     <div class = "result-section">
-
       <div class = "team-card">
         {% if home_logo %}
         <img src = "{{home_logo}}" alt="{{home_team}} logo" class="team-logo">
@@ -60,7 +59,29 @@
       <h2>{{ result }}</h2>
     </div>
     {% endif %}
-  <a href="/week" class="secondary-link">📅 View Weekly Predictions</a>
-</div>
+  {% if predictions is not none and not predictions.empty %}
+  <div class = "predictions-box">
+    <h2>📅 Week {{ week }} Predictions</h2>
+      <table class="predictions-table">
+        <tr>
+          <th>Home Team</th>
+          <th>Away Team</th>
+          <th>Predicted Winner</th>
+          <th>Win %</th>
+          <th>Margin</th>
+        </tr>
+        {% for _, row in predictions.iterrows() %}
+        <tr>
+          <td>{{ row.home }}</td>
+          <td>{{ row.away }}</td>
+          <td>{{ row.predicted_winner }}</td>
+          <td>{{ row.prob }}%</td>
+          <td>{{ row.margin }}</td>
+        </tr>
+        {% endfor %}
+      </table>
+    </div>
+    {% endif %}
+  </div>
 </body>
 </html>
