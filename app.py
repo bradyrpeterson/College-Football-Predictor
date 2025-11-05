@@ -52,20 +52,5 @@ def home():
 
     return render_template("index.html", teams=fbs_teams, result=result,home_team=home_team,away_team=away_team,home_logo=home_logo,away_logo=away_logo,winner_color=winner_color,predictions=upcoming_predictions,week=next_week)
 
-"""@app.route("/week", methods=["GET", "POST"])
-def week_predictions():
-    selected_week = None
-    preds = pd.DataFrame()
-
-    if request.method == "POST":
-        selected_week = int(request.form["week"])
-        preds = get_upcoming_predictions(week=selected_week)
-    else:
-        preds = get_upcoming_predictions()
-
-    games = preds.to_dict(orient="records")
-    weeks = sorted(df["week"].dropna().unique().astype(int))  # get available weeks
-    return render_template("predictions.html", games=games, weeks=weeks, selected_week=selected_week)"""
-
 if __name__ == "__main__":
     app.run(debug=True, host="0.0.0.0")

@@ -121,6 +121,12 @@ button:hover {
 }
 
 .predictions-table th {
-  background-color: #00416A;
+  background-color: #909090;
   color: white;
+}
+
+.winner {
+  background-color: #0056b3;
+  color:#000000;
+  font-weight: bold;
 }

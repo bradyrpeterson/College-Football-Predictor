@@ -66,15 +66,13 @@
         <tr>
           <th>Home Team</th>
           <th>Away Team</th>
-          <th>Predicted Winner</th>
           <th>Win %</th>
           <th>Margin</th>
         </tr>
         {% for _, row in predictions.iterrows() %}
         <tr>
-          <td>{{ row.home }}</td>
-          <td>{{ row.away }}</td>
-          <td>{{ row.predicted_winner }}</td>
+          <td class = "{% if row.predicted_winner == row.home %}winner{% endif %}">{{ row.home }}</td>
+          <td class = "{% if row.predicted_winner == row.away %}winner{% endif %}">{{ row.away }}</td>
           <td>{{ row.prob }}%</td>
           <td>{{ row.margin }}</td>
         </tr>

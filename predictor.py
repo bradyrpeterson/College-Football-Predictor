@@ -52,8 +52,6 @@ df=df.reset_index(drop=True)
 #Need to make an upcoming data frame as well as a completed data frame
 completed = df.dropna(subset=["homePoints","awayPoints"]).reset_index(drop=True)
 upcoming=df[df["homePoints"].isna() | df["awayPoints"].isna()].reset_index(drop=True)
-print(f"Upcoming games found: {len(upcoming)}")
-print(upcoming[["week","homeTeam","awayTeam"]].head(10))
 next_week = int(upcoming["week"].dropna().sort_values().unique()[0])
 
 #define what margin is
@@ -96,7 +94,7 @@ merged = ratings_df.merge(stats_clean, on="team", how="left")
 # In case I want to print the home field advantage calculation
 #print("Estimated home-field advantage (points):", round(home_field, 2))
 #In case I went to print the best teams strictly based on my powerindex
-#Print(ratings.sort_values(ascending=False).head(15))
+#print(ratings.sort_values(ascending=False).head(5))
 
 #Prediciton function
 def predict_game(home, away):
