@@ -17,7 +17,8 @@ with cfbd.ApiClient(configuration) as api_client:
 
 #Using requests pull all the statistical data from the data set
 stats_url = "https://api.collegefootballdata.com/stats/season?year=2025"
-headers = {"Authorization": "Bearer API_KEY"}  # your key
+headers = {"Authorization": "Bearer API_KEY"} 
+#Convert the API response into a json then a dataframe for easy use
 stats_response = requests.get(stats_url, headers=headers)
 stats_data = stats_response.json()
 stats_df = pd.DataFrame(stats_data)
@@ -31,13 +32,14 @@ stats_wide["yardsPerPlay_def"] = stats_wide["totalYardsOpponent"] / (stats_wide[
 stats_wide["thirdDownPct"] = stats_wide["thirdDownConversions"] / stats_wide["thirdDowns"]
 stats_wide["turnoverMargin"] = stats_wide["turnoversOpponent"] - stats_wide["turnovers"]
 
-# Keep only the stats that I plan on using
+# Keep only the stats/columns that I plan on using
 useful = ["team", "yardsPerPlay_off", "yardsPerPlay_def", "thirdDownPct", "turnoverMargin"]
 stats_clean = stats_wide[useful]
-#Turn JSON into a data frame
+#Each game is turned into a dictionary then into a dataframe 
 df = pd.DataFrame([g.to_dict() for g in games])
 #In case I need to see what columns the game dataset has to offer
 #print("Columns available:", df.columns.tolist())
+#Only keep the columns that matter
 need_cols = ["season","week","homeTeam","awayTeam","homePoints","awayPoints","homeConference","awayConference"]
 df=df[need_cols].copy()
 #Only care about games where one of the teams was FBS
@@ -58,11 +60,10 @@ next_week = int(upcoming["week"].dropna().sort_values().unique()[0])
 #sort the dataframe to have a line of home and away teams
 df=completed
 df["margin"] = df["homePoints"] - df["awayPoints"]
+#Build the design matrix
 teams = sorted(set(df["homeTeam"]).union(df["awayTeam"]))
-
-#Make design matrix
-#Must add 1 to hometeam that way the model knows who has the advantage
-
+#Home teams get a +1 value and -1 is for away
+#This setup allows for the regression to assign each team a numeric rating
 X = pd.DataFrame(0, index=np.arange(len(df)), columns=teams)
 for i, row in df.iterrows():
     X.loc[i, row["homeTeam"]] = 1    # +1 for home team
@@ -71,14 +72,23 @@ for i, row in df.iterrows():
 #Add home field column
 X["home_field"] = 1
 
-#y is the dataframe margin column
+#Time to fit the margin
+#The regressions finds coefficients that best fit the margins
+#Don't worry about an intercept cause we have home field
 y = df["margin"]
 
 #Create the linear regression based on the margins
+#Essentially finds a set of ratings that makes the predicted scores as close 
+#as possible to what actually happened
 model = LinearRegression(fit_intercept=False)
+#Fit a model that predicts y (point margin) as a linear
+#combination of the columns in X
 model.fit(X, y)
 
 #Ensure home field is counted for in the team ratings
+#Every team gets a numeric rating
+#home_field isolates the average value that being at home bears
+#Substrating the mean centers the ratings at 0 so the average team has that rating
 coefs = pd.Series(model.coef_, index=X.columns)
 home_field = coefs["home_field"]
 ratings = coefs.drop("home_field")
@@ -124,6 +134,7 @@ def get_upcoming_predictions(week=None):
     # Use the upcoming games dataset (no scores yet)
     games_to_predict = upcoming.copy()
 
+    
     if week is not None:
         games_to_predict = games_to_predict[games_to_predict["week"].astype(int) == int(week)]
 
@@ -131,7 +142,8 @@ def get_upcoming_predictions(week=None):
     for _, game in games_to_predict.iterrows():
         home, away = game["homeTeam"], game["awayTeam"]
 
-        #skip games where data or stats are missing
+        #skip games where data
+        #Helps avoid faulty data by skipping the games or stats are missing
         if home not in ratings.index or away not in ratings.index:
             continue
         if home not in stats_clean["team"].values or away not in stats_clean["team"].values:
