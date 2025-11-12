@@ -6,10 +6,14 @@ import requests
 import json
 from sklearn.linear_model import LinearRegression
 import matplotlib.pyplot as plt
+from dotenv import load_dotenv
+import os
 
+load_dotenv()
+api_key = os.getenv("API_KEY")
 #Using configuration suggested by CFBD turn the games into a dataset
 configuration = cfbd.Configuration(
-    access_token = 'API_KEY')
+    access_token = api_key)
 
 with cfbd.ApiClient(configuration) as api_client:
     api_instance = cfbd.GamesApi(api_client)
@@ -17,7 +21,7 @@ with cfbd.ApiClient(configuration) as api_client:
 
 #Using requests pull all the statistical data from the data set
 stats_url = "https://api.collegefootballdata.com/stats/season?year=2025"
-headers = {"Authorization": "Bearer API_KEY"} 
+headers = {"Authorization": f"Bearer {api_key}"} 
 #Convert the API response into a json then a dataframe for easy use
 stats_response = requests.get(stats_url, headers=headers)
 stats_data = stats_response.json()
