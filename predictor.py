@@ -1,9 +1,9 @@
-##Import needed packages
+#Import needed packages
 import pandas as pd
 import numpy as np
-import cfbd
-import requests
-import json
+import cfbd #College Football Data API
+import requests #For pulling data from CFBD
+import json #For handling json files
 from sklearn.linear_model import LinearRegression
 import matplotlib.pyplot as plt
 from dotenv import load_dotenv
