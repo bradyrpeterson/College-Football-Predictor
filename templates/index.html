@@ -5,81 +5,166 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>College Football Predictor</title>
   <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
 </head>
 
 <body {% if winner_color %}style="background-color: {{ winner_color }};"{% endif %}>
   <div class="container">
     <h1>🏈 College Football Predictor</h1>
-    <p>Select two FBS teams to predict the winner based on previous results and analytics.</p>
+    <p>Select two FBS teams to predict the winner based on advanced analytics and performance metrics.</p>
 
-    <form method="POST">
-      <div class="form-group">
-        <label for="home_team">Home Team:</label>
-        <select name="home_team" id="home_team" required>
-          {% for team in teams %}
-          <option value="{{ team }}">{{ team }}</option>
-          {% endfor %}
-        </select>
-      </div>
+    <div class="form-section">
+      <form method="POST">
+        <div class="form-group">
+          <label for="home_team">🏠 Home Team:</label>
+          <select name="home_team" id="home_team" required>
+            <option value="" disabled selected>Select home team...</option>
+            {% for team in teams %}
+            <option value="{{ team }}" {% if home_team == team %}selected{% endif %}>{{ team }}</option>
+            {% endfor %}
+          </select>
+        </div>
 
-      <div class="form-group">
-        <label for="away_team">Away Team:</label>
-        <select name="away_team" id="away_team" required>
-          {% for team in teams %}
-          <option value="{{ team }}">{{ team }}</option>
-          {% endfor %}
-        </select>
-      </div>
+        <div class="form-group">
+          <label for="away_team">✈️ Away Team:</label>
+          <select name="away_team" id="away_team" required>
+            <option value="" disabled selected>Select away team...</option>
+            {% for team in teams %}
+            <option value="{{ team }}" {% if away_team == team %}selected{% endif %}>{{ team }}</option>
+            {% endfor %}
+          </select>
+        </div>
 
-      <button type="submit">Predict Game</button>
-    </form>
+        <button type="submit">🎯 Predict Game</button>
+      </form>
+    </div>
 
     {% if result %}
-    <div class = "result-section">
-      <div class = "team-card">
+    <div class="result-section">
+      <div class="team-card">
         {% if home_logo %}
-        <img src = "{{home_logo}}" alt="{{home_team}} logo" class="team-logo">
+        <img src="{{ home_logo }}" alt="{{ home_team }} logo" class="team-logo">
         {% endif %}
-        <h3>{{home_team}}</h3>
+        <h3>{{ home_team }}</h3>
       </div>
 
-    <div class = "vs-text">
-      <h2>vs</h2>
-    </div>
+      <div class="vs-text">
+        <h2>VS</h2>
+      </div>
 
-    <div class = "team-card">
-      {% if away_logo %}
-      <img src = "{{away_logo}}" alt = "{{away_team}} logo" class="team-logo">
-      {% endif %}
-      <h3>{{away_team}}</h3>
+      <div class="team-card">
+        {% if away_logo %}
+        <img src="{{ away_logo }}" alt="{{ away_team }} logo" class="team-logo">
+        {% endif %}
+        <h3>{{ away_team }}</h3>
+      </div>
     </div>
-  </div>
   
     <div class="result-box">
       <h2>{{ result }}</h2>
     </div>
     {% endif %}
-  {% if predictions is not none and not predictions.empty %}
-  <div class = "predictions-box">
-    <h2>📅 Week {{ week }} Predictions</h2>
+
+    {% if predictions is not none and not predictions.empty %}
+    <div class="predictions-box">
+      <h2>📅 Week {{ week }} Predictions</h2>
+      <p style="color: #666; font-size: 0.95em; margin-bottom: 10px;">
+        Games highlighted show value opportunities where the model differs significantly from DraftKings
+      </p>
       <table class="predictions-table">
-        <tr>
-          <th>Home Team</th>
-          <th>Away Team</th>
-          <th>Win %</th>
-          <th>Margin</th>
-        </tr>
-        {% for _, row in predictions.iterrows() %}
-        <tr>
-          <td class = "{% if row.predicted_winner == row.home %}winner{% endif %}">{{ row.home }}</td>
-          <td class = "{% if row.predicted_winner == row.away %}winner{% endif %}">{{ row.away }}</td>
-          <td>{{ row.prob }}%</td>
-          <td>{{ row.margin }}</td>
-        </tr>
-        {% endfor %}
+        <thead>
+          <tr>
+            <th>Home Team</th>
+            <th>Away Team</th>
+            <th>Win Probability</th>
+            <th>Predicted Margin</th>
+            <th>DraftKings Spread</th>
+            <th>Edge</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for _, row in predictions.iterrows() %}
+          <tr class="{% if row.edge_class == 'edge-big' %}edge-big{% elif row.edge_class == 'edge-medium' %}edge-medium{% endif %}">
+            <td class="{% if row.predicted_winner == row.home %}winner{% endif %}">
+              {{ row.home }}
+            </td>
+            <td class="{% if row.predicted_winner == row.away %}winner{% endif %}">
+              {{ row.away }}
+            </td>
+            <td class="{% if row.prob >= 70 %}confidence-high{% elif row.prob >= 55 %}confidence-medium{% else %}confidence-low{% endif %}">
+              {{ row.prob }}%
+            </td>
+            <td>
+              {% if row.predicted_winner == row.home %}
+                {{ row.home }} -{{ row.margin }}
+              {% else %}
+                {{ row.away }} -{{ row.margin }}
+              {% endif %}
+            </td>
+            <td>
+              {% if row.betting_spread is not none %}
+                {% if row.betting_spread > 0 %}
+                  {{ row.away }} -{{ row.betting_spread|abs|round(1) }}
+                {% elif row.betting_spread < 0 %}
+                  {{ row.home }} -{{ row.betting_spread|abs|round(1) }}
+                {% else %}
+                  Pick'em
+                {% endif %}
+              {% else %}
+                N/A
+              {% endif %}
+            </td>
+            <td>
+              {% if row.spread_diff is not none %}
+                {% if row.spread_diff > 0 %}
+                  +{{ row.spread_diff }} pts
+                {% else %}
+                  {{ row.spread_diff }} pts
+                {% endif %}
+              {% else %}
+                -
+              {% endif %}
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
       </table>
+      <div style="margin-top: 20px; font-size: 0.9em; color: #666;">
+        <p><strong>Legend:</strong></p>
+        <p style="margin: 5px 0;">
+          <span class="confidence-high">● High Confidence (70%+)</span> | 
+          <span class="confidence-medium">● Medium Confidence (55-69%)</span> | 
+          <span class="confidence-low">● Low Confidence (&lt;55%)</span>
+        </p>
+        <p style="margin: 5px 0;">
+          <span style="background: #fff3cd; padding: 2px 8px; border-radius: 3px;">🟡 Yellow: 3-5 point edge</span> | 
+          <span style="background: #d4edda; padding: 2px 8px; border-radius: 3px;">🟢 Green: 5+ point edge</span>
+        </p>
+        <p style="margin-top: 10px; font-size: 0.85em; font-style: italic;">
+          <strong>Note:</strong> "Edge" shows how much your model differs from the DraftKings line. Positive edge = your model is more bullish on the team than DraftKings.
+        </p>
+      </div>
     </div>
     {% endif %}
   </div>
+
+  <script>
+    // Prevent selecting the same team twice
+    document.getElementById('home_team').addEventListener('change', function() {
+      const awaySelect = document.getElementById('away_team');
+      if (this.value === awaySelect.value) {
+        alert('Please select different teams for home and away!');
+        awaySelect.value = '';
+      }
+    });
+
+    document.getElementById('away_team').addEventListener('change', function() {
+      const homeSelect = document.getElementById('home_team');
+      if (this.value === homeSelect.value) {
+        alert('Please select different teams for home and away!');
+        homeSelect.value = '';
+      }
+    });
+  </script>
 </body>
 </html>

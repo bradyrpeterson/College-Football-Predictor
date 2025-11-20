@@ -134,13 +134,79 @@ def predict_game(home, away):
     prob = 1 / (1 + np.exp(-margin / 7))  # rough logistic
     return margin, prob
 
+def get_betting_lines(week, year=2025):
+    """
+    Fetch betting lines from the CFBD API for a specific week
+    Returns a dictionary mapping (home, away) tuples to DraftKings spreads
+    """
+    lines_url = f"https://api.collegefootballdata.com/lines?year={year}&week={week}&seasonType=regular"
+    
+    try:
+        response = requests.get(lines_url, headers=headers)
+        response.raise_for_status()
+        lines_data = response.json()
+        
+        betting_lines = {}
+        
+        for game in lines_data:
+            home = game.get("homeTeam")
+            away = game.get("awayTeam")
+            lines = game.get("lines", [])
+            
+            if not home or not away or not lines:
+                continue
+            
+            # Look specifically for DraftKings line
+            draftkings_spread = None
+            for line in lines:
+                if line.get("provider") == "DraftKings":
+                    draftkings_spread = line.get("spread")
+                    break
+            
+            if draftkings_spread is not None:
+                betting_lines[(home, away)] = draftkings_spread
+        
+        return betting_lines
+    
+    except Exception as e:
+        print(f"Error fetching betting lines: {e}")
+        return {}
+
+def calculate_edge_highlight(model_margin, betting_spread):
+    """
+    Calculate what highlight class to use based on difference between
+    model prediction and betting spread
+    
+    model_margin: positive = home favored, negative = away favored
+    betting_spread: positive = away favored, negative = home favored
+    
+    Returns: 'edge-big' (5+ point difference) or 'edge-medium' (3-5 point difference) or None
+    """
+    # Convert betting spread to match our model's convention
+    # If betting spread is +7, that means home is favored by 7
+    # If betting spread is -7, that means away is favored by 7
+    # We need to flip it to match our model's convention (positive = home favored)
+    betting_margin = -betting_spread
+    
+    # Calculate the difference
+    difference = abs(model_margin - betting_margin)
+    
+    if difference >= 5:
+        return 'edge-big'
+    elif difference >= 3:
+        return 'edge-medium'
+    else:
+        return None
+
 def get_upcoming_predictions(week=None):
     # Use the upcoming games dataset (no scores yet)
     games_to_predict = upcoming.copy()
 
-    
     if week is not None:
         games_to_predict = games_to_predict[games_to_predict["week"].astype(int) == int(week)]
+
+    # Fetch betting lines for this week
+    betting_lines = get_betting_lines(week if week else next_week)
 
     predictions = []
     for _, game in games_to_predict.iterrows():
@@ -153,16 +219,31 @@ def get_upcoming_predictions(week=None):
         if home not in stats_clean["team"].values or away not in stats_clean["team"].values:
             continue
 
-       
         try:
             margin, prob = predict_game(home, away)
             winner = home if margin > 0 else away
+            
+            # Get betting line for this game
+            betting_spread = betting_lines.get((home, away), None)
+            
+            # Calculate edge highlight
+            edge_class = None
+            spread_diff = None
+            if betting_spread is not None:
+                edge_class = calculate_edge_highlight(margin, betting_spread)
+                # Calculate the actual difference for display
+                betting_margin = -betting_spread
+                spread_diff = round(margin - betting_margin, 1)
+            
             predictions.append({
                 "home": home,
                 "away": away,
                 "predicted_winner": winner,
                 "margin": round(abs(margin), 2),
-                "prob": round(prob * 100, 1) if margin > 0 else round((1 - prob) * 100, 1)
+                "prob": round(prob * 100, 1) if margin > 0 else round((1 - prob) * 100, 1),
+                "betting_spread": betting_spread,
+                "edge_class": edge_class,
+                "spread_diff": spread_diff
             })
         except Exception as e:
             print(f"Error predicting {home} vs {away}: {e}")
@@ -175,4 +256,3 @@ def get_upcoming_predictions(week=None):
 # How to print if I wasn't using the app
 #m, p = predict_game("Florida State", "Ohio State")
 #print(f"\nPredicted margin {m:.2f}, win probability {p*100:.1f}%")
-
